@@ -48,6 +48,11 @@ class EventHandler(tcod.event.EventDispatch[Action]):
     def __init__(self, engine: Engine):
         self.engine = engine
 
+class MainGameEventHandler(EventHandler):
+    def handle_events(self) -> None:
+        raise NotImplementedError()
+
+
     def handle_events(self) -> None:
         for event in tcod.event.wait():
             action = self.dispatch(event)
@@ -81,6 +86,27 @@ class EventHandler(tcod.event.EventDispatch[Action]):
 
         elif key == tcod.event.K_ESCAPE:
             action = EscapeAction(player)
+
+        # No valid key was pressed
+        return action
+
+class GameOverEventHandler(EventHandler):
+    def handle_events(self) -> None:
+        for event in tcod.event.wait():
+            action = self.dispatch(event)
+
+            if action is None:
+                continue
+
+            action.perform()
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
+        action: Optional[Action] = None
+
+        key = event.sym
+
+        if key == tcod.event.K_ESCAPE:
+            action = EscapeAction(self.engine.player)
 
         # No valid key was pressed
         return action
